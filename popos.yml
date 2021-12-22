@@ -1,0 +1,267 @@
+---
+- name: Preparing Workstation
+  hosts: localhost
+  connection: local
+  tasks:
+
+    - name: Installing Linux Apps
+      become: true
+      apt:
+        name: '{{ item }}'
+        install_recommends: yes
+        state: present
+      loop:
+          - vim
+          - htop
+          - curl
+          - wget
+          - ncdu
+          - tree
+          - python3-pip
+          - make
+          - git
+          - bash-completion
+          - zsh
+          - flameshot
+          - fonts-hack
+          - tilix
+          - virtualbox
+          - krita
+          - gimp
+          - unrar
+          - unzip
+          - audacious
+          - neofetch
+          - timeshift
+          - vlc
+          - mlocate
+          - golang-go
+
+    - name: Installing Battery Saver TLP
+      become: true
+      apt:
+        name: '{{ item }}'
+        install_recommends: no
+        state: present
+      loop:
+          - tlp
+          - tlp-rdw
+          - smartmontools
+          - ethtool
+    
+    - name: Installing virtualenv and virtualenvwrapper via pip3
+      become: true
+      pip:
+        name: '{{ item }}'
+        executable: pip3
+      loop: 
+        - virtualenv
+        - virtualenvwrapper
+
+    - block:
+      - name: Installing Tmux
+        become: true
+        apt:
+          name: 'tmux'
+          state: present
+      - name: Cloning oh-my-tmux repository
+        shell:
+          cmd: git clone https://github.com/gpakosz/.tmux.git /home/{{ ansible_user_id }}/.tmux
+      - name: Creating old tmux configurations backup
+        shell:
+          cmd: cp /home/{{ ansible_user_id }}/.tmux.conf /home/{{ ansible_user_id }}/.tmux/tmux.conf.bkp
+      - name: Creating symbolic link to tmux configurations
+        file:
+          src: /home/{{ ansible_user_id }}/.tmux/.tmux.conf
+          dest: /home/{{ ansible_user_id }}/.tmux.conf 
+          state: link
+
+    - block:
+      - name: Verify if Oh-My-zsh is installed
+        command: test -d /home/{{ ansible_user_id }}/.oh-my-zsh
+        register: ohmyzsh
+        ignore_errors: true
+      - name: Installing Oh-My-zsh
+        shell:
+          cmd: 'curl -fsL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh | bash'
+          warn: false
+        when: ohmyzsh.rc != 0
+      - name: Changing Default Shell to ZSH
+        become: yes
+        user: 
+          name: '{{ ansible_user_id }}'
+          shell: /bin/zsh 
+      - name: Changing Default ZSH Theme to PowerLevel10k
+        lineinfile:
+          path: /home/{{ ansible_user_id }}/.zshrc
+          regexp: '^ZSH_THEME='
+          line: 'ZSH_THEME="powerlevel10k/powerlevel10k"'
+      - name: Creating ZSH Completion folder
+        file:
+          path: /home/{{ ansible_user_id }}/.oh-my-zsh/completions
+          state: directory
+          mode: 0755
+      - name: Adding autoload to compinit
+        lineinfile:
+          path: /home/{{ ansible_user_id }}/.zshrc
+          line: 'autoload -U compinit && compinit'
+          state: present
+      - name: Changing instant prompt configuration
+        lineinfile:
+          path: /home/{{ ansible_user_id }}/.p10k.zsh
+          regexp: 'typeset -g POWERLEVEL9K_INSTANT_PROMPT=on'
+          line: '  typeset -g POWERLEVEL9K_INSTANT_PROMPT=off'
+      - name: Activating plugins
+        lineinfile:
+          path: /home/{{ ansible_user_id }}/.zshrc
+          regexp: '^plugins='
+          line: "plugins=(git sudo docker docker-compose kubectl zsh-syntax-highlighting zsh-autosuggestions)"
+ 
+    - block:
+      - name: Install Vagrant Key
+        become: true
+        apt_key: 
+          url: 'https://apt.releases.hashicorp.com/gpg'
+          state: present
+      - name: Install Vagrant Repository
+        become: true
+        apt_repository:
+          repo: 'deb [arch=amd64] https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main'
+          state: present
+          filename: vagrant
+      - name: Installing Vagrant
+        become: true
+        apt:
+          name: vagrant
+
+    - block:
+      - name: Install Microsoft Key
+        become: true
+        apt_key:
+          url: 'https://packages.microsoft.com/keys/microsoft.asc'
+          state: present
+      - name: Install VSCode Repository
+        become: true
+        apt_repository:
+          repo: 'deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main'
+          state: present
+          filename: vscode
+      - name: Install Visual Studio Code
+        become: true
+        apt:
+          name: code
+      - name: Install Virtual Studio Code Extensions
+        shell:
+          cmd: code --install-extension '{{ item }}' 
+        loop: 
+          - alexisvt.flutter-snippets
+          - bbenoist.vagrant
+          - Dart-Code.dart-code
+          - Dart-Code.flutter
+          - dbaeumer.vscode-eslint
+          - DigitalBrainstem.javascript-ejs-support
+          - eamodio.gitlens
+          - esbenp.prettier-vscode
+          - golang.go
+          - Gruntfuggly.todo-tree
+          - humao.rest-client
+          - johnpapa.vscode-peacock
+          - mhutchie.git-graph
+          - ms-azuretools.vscode-docker
+          - ms-kubernetes-tools.vscode-kubernetes-tools
+          - ms-python.python
+          - ms-python.vscode-pylance
+          - ms-toolsai.jupyter
+          - ms-toolsai.jupyter-keymap
+          - ms-toolsai.jupyter-renderers
+          - ms-vscode.vscode-typescript-tslint-plugin
+          - njpwerner.autodocstring
+          - PKief.material-icon-theme
+          - redhat.vscode-yaml
+          - softwaredotcom.swdc-vscode
+          - wix.vscode-import-cost
+          - xabikos.ReactSnippets
+
+    - block: 
+      - name: Install Docker Key
+        become: true
+        apt_key:
+          url: 'https://download.docker.com/linux/ubuntu/gpg'
+          state: present
+      - name: Install Docker Repository
+        become: true
+        apt_repository:
+          repo: 'deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'
+          state: present
+          filename: docker-ce
+      - name: Install Docker
+        become: true
+        apt:
+          name: docker-ce
+      - name: Adding existing user to group Docker
+        become: yes
+        user: 
+          name: '{{ ansible_user_id }}'
+          groups: docker 
+          append: yes
+      - name: Install Docker-Compose
+        become: true
+        get_url:
+          url: 'https://github.com/docker/compose/releases/download/1.26.2/docker-compose-Linux-x86_64'
+          dest: '/usr/local/bin/docker-compose'
+          mode: 755
+      - name: Install Docker Machine Bash Completion
+        become: true
+        get_url:
+          url: 'https://raw.githubusercontent.com/docker/machine/v0.16.0/contrib/completion/bash/docker-machine.bash'
+          dest: '/etc/bash_completion.d/docker-machine'
+      - name: Install Docker-Compose Bash Completion
+        become: true
+        get_url:
+          url: 'https://raw.githubusercontent.com/docker/compose/1.26.2/contrib/completion/bash/docker-compose'
+          dest: '/etc/bash_completion.d/docker-compose'
+        
+    - block:
+      - name: Installing Kubectl 1.22.0
+        become: true
+        get_url:    
+          url: 'https://dl.k8s.io/release/v1.22.0/bin/linux/amd64/kubectl'
+          dest: /usr/local/bin/kubectl
+          mode: 755
+          # Check later for install latest release 
+          # curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      - name: Downloading Kubectx and Kubens 
+        become: true
+        git:
+          repo: 'https://github.com/ahmetb/kubectx'
+          dest: /opt/kubectx 
+      - name: Creating Symlink to kubectx and kubens 
+        become: true
+        file:
+          src: '/opt/kubectx/{{ item }}'
+          dest: '/usr/local/bin/{{ item }}'
+          state: link
+        with_items:
+          - kubectx
+          - kubens  
+      - name: Creating ZSH Completion  
+        file:
+          src: '/opt/kubectx/completion/_{{ item }}'
+          dest: '/home/{{ ansible_user_id }}/.oh-my-zsh/completions/_{{ item }}'
+          state: link
+        with_items:
+          - kubectx.zsh
+          - kubens.zsh 
+                  
+# OPTIONAL:
+#  - PEEK - Lightweight Screen Recorder that can export as GIF
+
+    - block:
+      - name: Adding Peek Repository
+        become: true
+        apt_repository:
+          repo: 'ppa:peek-developers/stable'
+      - name: Install Peek
+        become: true
+        apt:
+          name: peek
