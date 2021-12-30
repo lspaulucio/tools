@@ -255,6 +255,7 @@
                   
 # OPTIONAL:
 #  - PEEK - Lightweight Screen Recorder that can export as GIF
+#  - Minikube - Minikube is local Kubernetes
 
     - block:
       - name: Adding Peek Repository
@@ -265,3 +266,10 @@
         become: true
         apt:
           name: peek
+
+    - name: Install minikube
+      become: true
+      get_url:
+        url: 'https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64'
+        dest: '/usr/local/bin/minikube'
+        mode: 755
