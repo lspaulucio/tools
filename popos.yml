@@ -115,7 +115,15 @@
         lineinfile:
           path: /home/{{ ansible_user_id }}/.zshrc
           regexp: '^plugins='
-          line: "plugins=(git sudo docker docker-compose kubectl zsh-syntax-highlighting zsh-autosuggestions)"
+          line: | 
+            plugins=( git 
+                      sudo 
+                      docker 
+                      docker-compose 
+                      kubectl 
+                      zsh-syntax-highlighting 
+                      zsh-autosuggestions
+            )
  
     - block:
       - name: Install Vagrant Key
