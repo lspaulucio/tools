@@ -169,6 +169,7 @@
           - dbaeumer.vscode-eslint
           - DigitalBrainstem.javascript-ejs-support
           - eamodio.gitlens
+          - EditorConfig.EditorConfig
           - esbenp.prettier-vscode
           - golang.go
           - Gruntfuggly.todo-tree
@@ -187,6 +188,7 @@
           - PKief.material-icon-theme
           - redhat.vscode-yaml
           - softwaredotcom.swdc-vscode
+          - styled-components.vscode-styled-components
           - wix.vscode-import-cost
           - xabikos.ReactSnippets
 
