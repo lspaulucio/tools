@@ -168,6 +168,7 @@
           - Dart-Code.flutter
           - dbaeumer.vscode-eslint
           - DigitalBrainstem.javascript-ejs-support
+          - dracula-theme.theme-dracula
           - eamodio.gitlens
           - EditorConfig.EditorConfig
           - esbenp.prettier-vscode
@@ -187,10 +188,12 @@
           - njpwerner.autodocstring
           - PKief.material-icon-theme
           - redhat.vscode-yaml
+          - shd101wyy.markdown-preview-enhanced
           - softwaredotcom.swdc-vscode
           - styled-components.vscode-styled-components
           - wix.vscode-import-cost
           - xabikos.ReactSnippets
+          - yzhang.markdown-all-in-one
 
     - block: 
       - name: Install Docker Key
