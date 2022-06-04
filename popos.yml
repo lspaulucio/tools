@@ -11,31 +11,32 @@
         install_recommends: yes
         state: present
       loop:
-          - vim
-          - htop
-          - curl
-          - wget
-          - ncdu
-          - tree
-          - python3-pip
-          - make
-          - git
+          - audacious
           - bash-completion
-          - zsh
+          - curl
           - flameshot
           - fonts-hack
-          - tilix
-          - virtualbox
-          - krita
           - gimp
+          - git
+          - golang-go
+          - htop
+          - kdeconnect
+          - krita
+          - make
+          - mlocate
+          - ncdu
+          - neofetch
+          - python3-pip
+          - tilix
+          - timeshift
+          - tree
           - unrar
           - unzip
-          - audacious
-          - neofetch
-          - timeshift
+          - vim
+          - virtualbox
           - vlc
-          - mlocate
-          - golang-go
+          - wget
+          - zsh
 
     - name: Check if VTE file exists
       command: test -f /etc/profile.d/vte.sh
