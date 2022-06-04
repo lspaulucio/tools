@@ -37,6 +37,16 @@
           - mlocate
           - golang-go
 
+    - name: Check if VTE file exists
+      command: test -f /etc/profile.d/vte.sh
+      register: vtefile
+      ignore_errors: true
+    - name: Adjusting VTE for tilix
+      become: true
+      shell:
+        cmd: ln -s /etc/profile.d/vte-2.91.sh /etc/profile.d/vte.sh
+      when: vtefile.rc != 0
+
     - name: Installing Battery Saver TLP
       become: true
       apt:
@@ -64,12 +74,18 @@
         apt:
           name: 'tmux'
           state: present
+      - name: Verify if oh-my-tmux is installed
+        command: test -d /home/{{ ansible_user_id }}/.tmux
+        register: ohmytmux
+        ignore_errors: true
       - name: Cloning oh-my-tmux repository
         shell:
           cmd: git clone https://github.com/gpakosz/.tmux.git /home/{{ ansible_user_id }}/.tmux
+        when: ohmytmux.rc != 0
       - name: Creating old tmux configurations backup
         shell:
           cmd: cp /home/{{ ansible_user_id }}/.tmux.conf /home/{{ ansible_user_id }}/.tmux/tmux.conf.bkp
+        when: ohmytmux.rc != 0
       - name: Creating symbolic link to tmux configurations
         file:
           src: /home/{{ ansible_user_id }}/.tmux/.tmux.conf
@@ -111,6 +127,10 @@
           path: /home/{{ ansible_user_id }}/.p10k.zsh
           regexp: 'typeset -g POWERLEVEL9K_INSTANT_PROMPT=on'
           line: '  typeset -g POWERLEVEL9K_INSTANT_PROMPT=off'
+      - name: Checking if plugins are enabled on zshrc
+        command: grep zsh-autosuggestions /home/{{ ansible_user_id }}/.zshrc
+        register: pluginsenabled
+        ignore_errors: true
       - name: Activating plugins
         lineinfile:
           path: /home/{{ ansible_user_id }}/.zshrc
@@ -125,6 +145,7 @@
                       zsh-syntax-highlighting 
                       zsh-autosuggestions
             )
+        when: pluginsenabled.rc != 0
  
     - block:
       - name: Install Vagrant Key
@@ -267,6 +288,27 @@
           - kubectx.zsh
           - kubens.zsh 
                   
+    - block:
+      - name: Add Grub-customizer repository from PPA
+        become: true
+        apt_repository:
+          repo: ppa:danielrichter2007/grub-customizer
+      - name: Installing grub tools
+        become: true
+        apt:
+          name: '{{ item }}'
+          install_recommends: yes
+          state: present
+        loop:
+          - grub2
+          - grub-customizer
+
+    - block:
+      - name: Adjusting time
+        shell:
+          cmd: timedatectl set-local-rtc 1 --adjust-system-clock
+
+
 # OPTIONAL:
 #  - PEEK - Lightweight Screen Recorder that can export as GIF
 #  - Minikube - Minikube is local Kubernetes
