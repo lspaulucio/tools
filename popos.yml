@@ -15,6 +15,7 @@
           - bash-completion
           - curl
           - flameshot
+          - ffmpegthumbnailer
           - fonts-hack
           - gimp
           - git
