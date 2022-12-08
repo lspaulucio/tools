@@ -187,6 +187,7 @@
         shell:
           cmd: code --install-extension '{{ item }}' 
         loop: 
+          - adpyke.codesnap
           - alexisvt.flutter-snippets
           - bbenoist.vagrant
           - Dart-Code.dart-code
