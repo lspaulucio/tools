@@ -321,6 +321,14 @@
         shell:
           cmd: timedatectl set-local-rtc 1 --adjust-system-clock
 
+    - block:
+      - name: User's group adjustments
+        become: yes
+        user: 
+          name: '{{ ansible_user_id }}'
+          groups: dialout
+          append: yes
+
 
 # OPTIONAL:
 #  - PEEK - Lightweight Screen Recorder that can export as GIF
